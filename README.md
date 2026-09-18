@@ -2,7 +2,7 @@
 
 Game Time is the internal native-iOS game platform for **Knowlly Games**.
 
-This repository contains the reusable Swift/SpriteKit runtime, shared experience systems, commerce hooks, diagnostics, testing utilities, and the reference implementation patterns used by Knowlly Games titles.
+This repository contains the reusable Swift/SpriteKit runtime, shared experience systems, commerce hooks, diagnostics, testing utilities, and reference implementation patterns used by Knowlly Games titles.
 
 ## Product goal
 
@@ -30,4 +30,22 @@ Build a portfolio of highly polished, easy-to-learn, replayable iOS games with a
 
 Mechanic-specific modules are extracted only after real reuse is proven by multiple shipped games.
 
-See [`docs/MASTER_PRD.md`](docs/MASTER_PRD.md) and [`docs/ROADMAP_50_DAYS.md`](docs/ROADMAP_50_DAYS.md).
+## Build and test
+
+```bash
+swift test
+```
+
+The package currently targets iOS 17+ and macOS 14+ and is validated in CI on macOS.
+
+## Using GameTimeKit from a game
+
+During active development, add this repository as a **local Swift package** in Xcode so the game and platform can evolve together without copying code or using git submodules.
+
+For shipped releases, games should pin a known-good GameTimeKit tag rather than follow `master`.
+
+See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for the local-package and tagged-release workflow.
+
+## Documentation
+
+Start with [`docs/MASTER_PRD.md`](docs/MASTER_PRD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), and [`docs/ROADMAP_50_DAYS.md`](docs/ROADMAP_50_DAYS.md).
