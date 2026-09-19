@@ -20,6 +20,7 @@ let package = Package(
         .target(name: "GameTimeServices", dependencies: ["GameTimeCore"]),
         .target(name: "GameTimeCommerce", dependencies: ["GameTimeCore", "GameTimeServices"]),
         .target(name: "GameTimeTesting", dependencies: ["GameTimeCore", "GameTimeServices", "GameTimeCommerce"]),
-        .testTarget(name: "GameTimeCoreTests", dependencies: ["GameTimeCore", "GameTimeTesting"])
+        .testTarget(name: "GameTimeCoreTests", dependencies: ["GameTimeCore", "GameTimeTesting"]),
+        .testTarget(name: "GameTimeCommerceTests", dependencies: ["GameTimeCommerce"])
     ]
 )
