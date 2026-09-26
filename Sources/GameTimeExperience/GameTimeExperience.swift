@@ -32,3 +32,20 @@ public struct NoOpAudioController: AudioControlling {
     public func play(_ event: GameFeedbackEvent) {}
     public func setEnabled(_ enabled: Bool) {}
 }
+
+/// One semantic event fans out to independently configurable sensory channels.
+/// Games retain their sound palette; failures in device adapters must be non-fatal.
+public struct GameFeedbackController: Sendable {
+    private let audio: any AudioControlling
+    private let haptics: any HapticsControlling
+
+    public init(audio: any AudioControlling, haptics: any HapticsControlling) {
+        self.audio = audio
+        self.haptics = haptics
+    }
+
+    public func play(_ event: GameFeedbackEvent, soundEnabled: Bool, hapticsEnabled: Bool) {
+        if soundEnabled { audio.play(event) }
+        if hapticsEnabled { haptics.play(event) }
+    }
+}

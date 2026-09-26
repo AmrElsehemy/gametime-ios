@@ -44,6 +44,7 @@ public struct RewardTransaction: Codable, Equatable, Sendable, Identifiable {
 }
 
 public enum RewardedAdOutcome: Equatable, Sendable {
+    case inProgress
     case unavailable
     case notEarned
     case alreadyGranted
@@ -93,6 +94,7 @@ public actor InMemoryRewardReceiptStore: RewardReceiptPersisting {
 public actor RewardedAdCoordinator {
     private let provider: any RewardedAdProviding
     private let receipts: any RewardReceiptPersisting
+    private var presenting = false
     private let now: @Sendable () -> Date
 
     public init(
@@ -106,6 +108,9 @@ public actor RewardedAdCoordinator {
     }
 
     public func attempt(_ request: RewardRequest) async throws -> RewardedAdOutcome {
+        guard !presenting else { return .inProgress }
+        presenting = true
+        defer { presenting = false }
         if await receipts.contains(rewardID: request.id) {
             return .alreadyGranted
         }
