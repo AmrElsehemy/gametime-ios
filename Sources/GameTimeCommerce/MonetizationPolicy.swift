@@ -17,6 +17,8 @@ public enum MonetizationPlacement: String, Codable, CaseIterable, Sendable {
 }
 
 public struct MonetizationContext: Equatable, Sendable {
+    public var canRequestAds: Bool
+    public var lastRewardedAdAt: Date?
     public var isGloballyEnabled: Bool
     public var isOnboarding: Bool
     public var sessionAge: TimeInterval
@@ -26,12 +28,16 @@ public struct MonetizationContext: Equatable, Sendable {
 
     public init(
         isGloballyEnabled: Bool = true,
+        canRequestAds: Bool = false,
+        lastRewardedAdAt: Date? = nil,
         isOnboarding: Bool,
         sessionAge: TimeInterval,
         completedLevels: Int,
         lastNonRewardedAdAt: Date? = nil,
         hasRemoveAdsEntitlement: Bool = false
     ) {
+        self.canRequestAds = canRequestAds
+        self.lastRewardedAdAt = lastRewardedAdAt
         self.isGloballyEnabled = isGloballyEnabled
         self.isOnboarding = isOnboarding
         self.sessionAge = sessionAge
@@ -42,15 +48,18 @@ public struct MonetizationContext: Equatable, Sendable {
 }
 
 public struct MonetizationPolicyConfiguration: Equatable, Sendable {
+    public var rewardedCooldown: TimeInterval
     public var nonRewardedMinimumSessionAge: TimeInterval
     public var nonRewardedMinimumCompletedLevels: Int
     public var nonRewardedCooldown: TimeInterval
 
     public init(
+        rewardedCooldown: TimeInterval = 30,
         nonRewardedMinimumSessionAge: TimeInterval = 180,
         nonRewardedMinimumCompletedLevels: Int = 5,
         nonRewardedCooldown: TimeInterval = 300
     ) {
+        self.rewardedCooldown = rewardedCooldown.isFinite ? max(0, rewardedCooldown) : 30
         self.nonRewardedMinimumSessionAge = max(0, nonRewardedMinimumSessionAge)
         self.nonRewardedMinimumCompletedLevels = max(0, nonRewardedMinimumCompletedLevels)
         self.nonRewardedCooldown = max(0, nonRewardedCooldown)
@@ -58,6 +67,7 @@ public struct MonetizationPolicyConfiguration: Equatable, Sendable {
 }
 
 public enum MonetizationIneligibilityReason: String, Equatable, Sendable {
+    case consentRequired
     case globallyDisabled
     case onboarding
     case removeAdsEntitlement
@@ -95,7 +105,11 @@ public struct MonetizationPolicy: Sendable {
             return .ineligible(.onboarding)
         }
 
+        guard context.canRequestAds else { return .ineligible(.consentRequired) }
         if placement.isRewarded {
+            if let last = context.lastRewardedAdAt, now.timeIntervalSince(last) < configuration.rewardedCooldown {
+                return .ineligible(.cooldown)
+            }
             return .eligible
         }
 

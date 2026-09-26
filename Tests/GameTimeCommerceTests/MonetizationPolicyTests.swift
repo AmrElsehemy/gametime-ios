@@ -6,7 +6,7 @@ final class MonetizationPolicyTests: XCTestCase {
 
     func testOnboardingSuppressesRewardedPlacements() {
         let policy = MonetizationPolicy()
-        let context = MonetizationContext(
+        let context = MonetizationContext(canRequestAds: true, 
             isOnboarding: true,
             sessionAge: 600,
             completedLevels: 20
@@ -20,7 +20,7 @@ final class MonetizationPolicyTests: XCTestCase {
 
     func testRewardedHintIsEligibleAfterOnboardingWithoutInterstitialGates() {
         let policy = MonetizationPolicy()
-        let context = MonetizationContext(
+        let context = MonetizationContext(canRequestAds: true, 
             isOnboarding: false,
             sessionAge: 5,
             completedLevels: 0
@@ -41,7 +41,7 @@ final class MonetizationPolicyTests: XCTestCase {
             )
         )
 
-        let youngSession = MonetizationContext(
+        let youngSession = MonetizationContext(canRequestAds: true, 
             isOnboarding: false,
             sessionAge: 60,
             completedLevels: 10
@@ -51,7 +51,7 @@ final class MonetizationPolicyTests: XCTestCase {
             .ineligible(.sessionTooYoung)
         )
 
-        let lowProgress = MonetizationContext(
+        let lowProgress = MonetizationContext(canRequestAds: true, 
             isOnboarding: false,
             sessionAge: 600,
             completedLevels: 2
@@ -64,7 +64,7 @@ final class MonetizationPolicyTests: XCTestCase {
 
     func testRemoveAdsSuppressesOnlyNonRewardedPlacements() {
         let policy = MonetizationPolicy()
-        let context = MonetizationContext(
+        let context = MonetizationContext(canRequestAds: true, 
             isOnboarding: false,
             sessionAge: 600,
             completedLevels: 20,
@@ -85,7 +85,7 @@ final class MonetizationPolicyTests: XCTestCase {
         let policy = MonetizationPolicy(
             configuration: .init(nonRewardedCooldown: 300)
         )
-        let context = MonetizationContext(
+        let context = MonetizationContext(canRequestAds: true, 
             isOnboarding: false,
             sessionAge: 600,
             completedLevels: 20,
@@ -101,7 +101,7 @@ final class MonetizationPolicyTests: XCTestCase {
     func testGlobalKillSwitchWins() {
         let policy = MonetizationPolicy()
         let context = MonetizationContext(
-            isGloballyEnabled: false,
+            isGloballyEnabled: false, canRequestAds: true,
             isOnboarding: false,
             sessionAge: 600,
             completedLevels: 20
