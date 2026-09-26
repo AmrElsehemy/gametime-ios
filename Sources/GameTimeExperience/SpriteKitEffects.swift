@@ -8,9 +8,11 @@ public enum GameTimeMotion {
     /// A tactile placement response: fast anticipation, overshoot and settle.
     public static func placementPop(
         from initialScale: CGFloat = 0.72,
-        overshoot: CGFloat = 1.10
+        overshoot: CGFloat = 1.10,
+        reduceMotion: Bool = false
     ) -> SKAction {
-        .sequence([
+        if reduceMotion { return .fadeIn(withDuration: 0.12) }
+        return .sequence([
             .scale(to: initialScale, duration: 0),
             .group([
                 .fadeIn(withDuration: 0.08),
@@ -22,8 +24,9 @@ public enum GameTimeMotion {
     }
 
     /// A short spatial rejection response suitable for illegal/conflicting input.
-    public static func invalidShake(distance: CGFloat = 6) -> SKAction {
-        .sequence([
+    public static func invalidShake(distance: CGFloat = 6, reduceMotion: Bool = false) -> SKAction {
+        if reduceMotion { return .sequence([.fadeAlpha(to: 0.65, duration: 0.08), .fadeIn(withDuration: 0.14)]) }
+        return .sequence([
             .moveBy(x: -distance, y: 0, duration: 0.04),
             .moveBy(x: distance * 2, y: 0, duration: 0.07),
             .moveBy(x: -distance * 1.5, y: 0, duration: 0.06),
@@ -32,16 +35,18 @@ public enum GameTimeMotion {
     }
 
     /// A compact success pulse for a board cell/piece.
-    public static func successPulse(scale: CGFloat = 1.05) -> SKAction {
-        .sequence([
+    public static func successPulse(scale: CGFloat = 1.05, reduceMotion: Bool = false) -> SKAction {
+        if reduceMotion { return .fadeIn(withDuration: 0.18) }
+        return .sequence([
             .scale(to: scale, duration: 0.10),
             .scale(to: 1.0, duration: 0.18)
         ])
     }
 
     /// Stronger milestone treatment without requiring game-specific artwork.
-    public static func milestonePulse() -> SKAction {
-        .sequence([
+    public static func milestonePulse(reduceMotion: Bool = false) -> SKAction {
+        if reduceMotion { return .fadeIn(withDuration: 0.24) }
+        return .sequence([
             .scale(to: 1.10, duration: 0.12),
             .scale(to: 0.97, duration: 0.08),
             .scale(to: 1.04, duration: 0.08),
@@ -49,16 +54,18 @@ public enum GameTimeMotion {
         ])
     }
 
-    public static func levelExit(direction: CGFloat = -1) -> SKAction {
-        .group([
+    public static func levelExit(direction: CGFloat = -1, reduceMotion: Bool = false) -> SKAction {
+        if reduceMotion { return .fadeOut(withDuration: 0.16) }
+        return .group([
             .moveBy(x: direction * 34, y: 0, duration: 0.18),
             .fadeOut(withDuration: 0.16),
             .scale(to: 0.97, duration: 0.18)
         ])
     }
 
-    public static func levelEnter(direction: CGFloat = 1) -> SKAction {
-        .sequence([
+    public static func levelEnter(direction: CGFloat = 1, reduceMotion: Bool = false) -> SKAction {
+        if reduceMotion { return .sequence([.fadeOut(withDuration: 0), .fadeIn(withDuration: 0.18)]) }
+        return .sequence([
             .group([
                 .moveBy(x: direction * 26, y: 0, duration: 0),
                 .fadeOut(withDuration: 0),
@@ -75,7 +82,7 @@ public enum GameTimeMotion {
     /// Deterministic delays for grid/board cascade choreography.
     public static func staggerOffsets(count: Int, step: TimeInterval) -> [TimeInterval] {
         guard count > 0 else { return [] }
-        return (0..<count).map { TimeInterval($0) * max(0, step) }
+        return (0..<count).map { TimeInterval($0) * (step.isFinite ? max(0, step) : 0) }
     }
 
     /// Runs the same action across nodes with a deterministic stagger.
@@ -86,7 +93,7 @@ public enum GameTimeMotion {
     ) {
         let offsets = staggerOffsets(count: nodes.count, step: step)
         for (node, delay) in zip(nodes, offsets) {
-            node.run(.sequence([.wait(forDuration: delay), action.copy() as! SKAction]))
+            node.run(.sequence([.wait(forDuration: delay), action]))
         }
     }
 }
@@ -101,9 +108,12 @@ public enum GameBurstStyle: Sendable {
 public enum GameTimeParticles {
     public static func burst(
         color: SKColor,
-        style: GameBurstStyle = .success
+        style: GameBurstStyle = .success,
+        texture: SKTexture? = nil
     ) -> SKEmitterNode {
         let emitter = SKEmitterNode()
+        emitter.particleTexture = texture
+        emitter.particleSize = CGSize(width: 12, height: 12)
         emitter.particleColor = color
         emitter.particleColorBlendFactor = 1
         emitter.particleBlendMode = .add
@@ -128,12 +138,17 @@ public enum GameTimeParticles {
         in parent: SKNode,
         at position: CGPoint,
         color: SKColor,
-        style: GameBurstStyle = .success
+        style: GameBurstStyle = .success,
+        reduceMotion: Bool = false,
+        texture: SKTexture? = nil
     ) {
-        let emitter = burst(color: color, style: style)
+        guard !reduceMotion else { return }
+        let emitter = burst(color: color, style: style, texture: texture)
         emitter.position = position
         parent.addChild(emitter)
-        let lifetime: TimeInterval = style == .milestone ? 1.2 : 0.9
+        // Include emission duration and the maximum particle lifetime.
+        let lifetime = Double(emitter.numParticlesToEmit) / Double(emitter.particleBirthRate)
+            + emitter.particleLifetime + emitter.particleLifetimeRange
         emitter.run(.sequence([.wait(forDuration: lifetime), .removeFromParent()]))
     }
 }
