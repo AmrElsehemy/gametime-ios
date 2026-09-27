@@ -14,7 +14,7 @@ public enum MonetizationOutcome: Equatable, Sendable {
 /// provider completion means an earned reward, never merely a dismissed ad.
 public actor MonetizationCoordinator {
     private let provider: any AdProviding
-    private let receipts: any RewardReceiptPersisting
+    private let receipts: RewardReceiptLedger
     private let tracker: any MonetizationEventTracking
     private let policy: MonetizationPolicy
     private let now: @Sendable () -> Date
@@ -26,10 +26,16 @@ public actor MonetizationCoordinator {
                 policy: MonetizationPolicy = .init(),
                 now: @escaping @Sendable () -> Date = { Date() }) {
         self.provider = provider
-        self.receipts = receipts
+        self.receipts = RewardReceiptLedger(store: receipts)
         self.tracker = tracker
         self.policy = policy
         self.now = now
+    }
+
+    /// The transaction behind an earlier `.granted`/`.alreadyGranted`, so a
+    /// caller that crashed before applying a reward can apply it on relaunch.
+    public func grantedTransaction(for rewardID: String) async -> RewardTransaction? {
+        await receipts.transaction(for: rewardID)
     }
 
     public func attempt(_ request: RewardRequest, placement: MonetizationPlacement,
@@ -51,25 +57,27 @@ public actor MonetizationCoordinator {
             return .unavailable
         }
         await tracker.track(.presentationStarted(placement))
+        let result: AdPresentationResult
         do {
-            switch try await provider.present(placement) {
-            case .cancelled:
-                await tracker.track(.presentationCancelled(placement))
-                return .cancelled
-            case .unavailable:
-                await tracker.track(.presentationUnavailable(placement))
-                return .unavailable
-            case .completed:
-                await tracker.track(.presentationCompleted(placement))
-                let transaction = RewardTransaction(rewardID: request.id, offerID: request.offer.id, grantedAt: now())
-                guard try await receipts.record(transaction) else { return .alreadyGranted }
-                lastRewardAt = transaction.grantedAt
-                await tracker.track(.rewardGranted(placement, rewardID: request.id))
-                return .granted(transaction)
-            }
+            result = try await provider.present(placement)
         } catch {
             await tracker.track(.presentationFailed(placement))
             return .failed
+        }
+        switch result {
+        case .cancelled:
+            await tracker.track(.presentationCancelled(placement))
+            return .cancelled
+        case .unavailable:
+            await tracker.track(.presentationUnavailable(placement))
+            return .unavailable
+        case .completed:
+            await tracker.track(.presentationCompleted(placement))
+            let transaction = RewardTransaction(rewardID: request.id, offerID: request.offer.id, grantedAt: now())
+            guard await receipts.record(transaction) else { return .alreadyGranted }
+            lastRewardAt = transaction.grantedAt
+            await tracker.track(.rewardGranted(placement, rewardID: request.id))
+            return .granted(transaction)
         }
     }
 }

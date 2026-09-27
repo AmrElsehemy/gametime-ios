@@ -55,3 +55,41 @@ private let allowed = MonetizationContext(canRequestAds: true, isOnboarding: fal
     #expect(policy.eligibility(for: .rewardedHint, context: context, now: now) == .ineligible(.cooldown))
     #expect(policy.eligibility(for: .rewardedHint, context: context, now: now.addingTimeInterval(30)) == .eligible)
 }
+
+private struct ReceiptWriteFailure: Error {}
+
+private actor CompletingAdProvider: AdProviding {
+    var presentations = 0
+    func isAvailable(for placement: MonetizationPlacement) async -> Bool { true }
+    func present(_ placement: MonetizationPlacement) async throws -> AdPresentationResult {
+        presentations += 1
+        return .completed
+    }
+}
+
+private actor FailOnceReceiptStore: RewardReceiptPersisting {
+    private let inner = InMemoryRewardReceiptStore()
+    private var shouldFail = true
+    func contains(rewardID: String) async -> Bool { await inner.contains(rewardID: rewardID) }
+    func transaction(for rewardID: String) async -> RewardTransaction? { await inner.transaction(for: rewardID) }
+    func record(_ transaction: RewardTransaction) async throws -> Bool {
+        if shouldFail { shouldFail = false; throw ReceiptWriteFailure() }
+        return try await inner.record(transaction)
+    }
+    func stored() async -> [RewardTransaction] { await inner.transactions() }
+}
+
+@Test func completedAdIsGrantedWhenReceiptWriteFailsAndNeverShownAgainForSameReward() async {
+    let provider = CompletingAdProvider()
+    let receipts = FailOnceReceiptStore()
+    let coordinator = MonetizationCoordinator(provider: provider, receipts: receipts,
+        policy: .init(configuration: .init(rewardedCooldown: 0)))
+
+    guard case let .granted(transaction) = await coordinator.attempt(reward, placement: .rewardedContinue, context: allowed) else {
+        Issue.record("A watched ad must not be lost to a receipt write failure"); return
+    }
+    #expect(await coordinator.attempt(reward, placement: .rewardedContinue, context: allowed) == .alreadyGranted)
+    #expect(await provider.presentations == 1)
+    #expect(await receipts.stored() == [transaction])
+    #expect(await coordinator.grantedTransaction(for: reward.id) == transaction)
+}
