@@ -86,6 +86,8 @@ public enum GameTimeMotion {
     }
 
     /// Runs the same action across nodes with a deterministic stagger.
+    /// SpriteKit nodes are main-actor isolated, so this must run on the main actor.
+    @MainActor
     public static func runStaggered(
         _ action: SKAction,
         on nodes: [SKNode],
@@ -104,7 +106,9 @@ public enum GameBurstStyle: Sendable {
 }
 
 /// Lightweight reusable particle burst. Games provide color/art direction;
-/// GameTimeExperience owns the lifecycle and choreography.
+/// GameTimeExperience owns the lifecycle and choreography. Emitters are
+/// SpriteKit nodes, which are main-actor isolated.
+@MainActor
 public enum GameTimeParticles {
     public static func burst(
         color: SKColor,
