@@ -1,4 +1,4 @@
-# Game #001 — Nine
+# Game #001 — Exactly One
 
 Game #001 is now owned by its dedicated product repository:
 
