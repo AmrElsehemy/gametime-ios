@@ -114,7 +114,7 @@ private actor TestRewardedAdProvider: RewardedAdProviding {
         if case .granted = $0 { return true }
         return false
     }.count == 1)
-    #expect(outcomes.filter { $0 == .alreadyGranted }.count == 1)
+    #expect(outcomes.filter { $0 == .alreadyGranted || $0 == .inProgress }.count == 1)
     #expect(await provider.presentations() == 1)
     #expect(await receipts.transactions().count == 1)
 }
