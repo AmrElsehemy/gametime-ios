@@ -9,6 +9,7 @@ public enum GameFeedbackEvent: String, Codable, CaseIterable, Sendable {
     case undo
     case solve
     case milestone
+    case pour
 }
 
 public protocol HapticsControlling: Sendable {
