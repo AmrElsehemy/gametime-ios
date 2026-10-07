@@ -20,6 +20,11 @@ final class GameTimeMotionTests: XCTestCase {
     func testStaggerOffsetsHandleEmptyInput() {
         XCTAssertEqual(GameTimeMotion.staggerOffsets(count: 0, step: 0.1), [])
     }
+    func testPourFeedbackEventIsAvailableForContainerGames() {
+        XCTAssertEqual(GameFeedbackEvent.pour.rawValue, "pour")
+        XCTAssertTrue(GameFeedbackEvent.allCases.contains(.pour))
+    }
+
 }
 
 extension GameTimeMotionTests {
