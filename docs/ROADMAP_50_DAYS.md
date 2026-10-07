@@ -65,8 +65,9 @@ Apple review duration is external to this roadmap.
 Target:
 - Game #001 public if Apple review permits
 - real retention/monetization data arriving
-- Game #002 in TestFlight or submission
-- Game #002 proves GameTimeKit creates material reuse
+- **Game #002 = Top Off** (stack/container mechanic) in TestFlight or submission
+- Top Off proves GameTimeKit creates material reuse with the PRD reuse table filled with actual outcomes
+- before generator-scale work, the five handcrafted Top Off levels must be playable on iPhone with tactile SpriteKit interaction
 - initial Knowlly Games social publishing active
 
 ## Day 30 — Studio is visible
