@@ -65,6 +65,13 @@ This file records product/architecture decisions already made so future developm
 - Paid acquisition is evaluated on retained/revenue-producing cohorts, not installs alone.
 - Marketing capture/Remotion/social scheduling are future automation targets.
 
+## Game #002
+- Public product: **Top Off**.
+- Mechanic family: **stack / container**.
+- The earlier path-engine idea is no longer Game #002; retain path / trace for a future title.
+- Immediate gate: five handcrafted levels playable on iPhone with tactile SpriteKit interaction before large-scale generator/solver work.
+- Game #002 is the first explicit reuse audit for GameTimeKit.
+
 ## Roadmap
 - Day 1: foundation.
 - Day 2: playable Game #001.
