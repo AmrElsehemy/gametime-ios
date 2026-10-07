@@ -77,7 +77,7 @@ Based on the current state of `Sources/` (about 780 lines; see the audit in conv
 | Eligibility, cooldowns, consent, remove-ads gating | `MonetizationPolicy`, `MonetizationPlacement` | **Reuse**; likely uses `rewardedHint`, `bonusReward`, `betweenLevels`; check whether an "extra container" placement needs a new case | _TBD_ |
 | Idempotent reward receipts | `RewardReceiptPersisting`, `InMemoryRewardReceiptStore` | **Reuse protocol; build persistent store.** Candidate to extract (also needed by #001) | _TBD_ |
 | Ad provider, entitlements, event tracking | Protocols plus no-op implementations | **Reuse protocols; write concrete adapters** (ad SDK, StoreKit). Candidate to extract | _TBD_ |
-| Semantic feedback events | `GameFeedbackEvent`: `placement`, `invalidMove`, `conflict`, `hint`, `undo`, `solve`, `milestone` | **Reuse**; **gap:** no `pour`/`transfer` event. `GAME_MECHANIC_TAXONOMY.md` lists pour as a shared semantic action, so add it to the platform rather than aliasing | _TBD_ |
+| Semantic feedback events | `GameFeedbackEvent`: `placement`, `invalidMove`, `conflict`, `hint`, `undo`, `solve`, `milestone`, `pour` | **Reuse**; `pour` added to the platform (it is a shared semantic action in `GAME_MECHANIC_TAXONOMY.md`), so no aliasing needed | _TBD_ |
 | Haptics and audio controllers | Protocols and no-ops only | **Write concrete Core Haptics/AVFoundation adapters.** Strongest extraction candidate | _TBD_ |
 | SpriteKit effects (staggered timing, accessible feedback) | `GameTimeExperience/SpriteKitEffects` | **Reuse** for solve/milestone celebrations; liquid and pour rendering stays local | _TBD_ |
 | Clock and seeded randomness | `GameTimeCore` | **Reuse** (deterministic generator and replays) | _TBD_ |
