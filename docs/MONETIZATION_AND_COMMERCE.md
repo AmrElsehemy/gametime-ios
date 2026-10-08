@@ -66,3 +66,18 @@ Track and simulate:
 
 ## Integrity
 Paid entitlements and reward grants must be idempotent. Server-side verification / App Store server notifications / App Attest are future hardening steps when economic abuse becomes material.
+
+## AdMob adapter (`GameTimeAdMob`)
+
+Concrete Google Mobile Ads implementation of `AdProviding`, plus the Google UMP consent flow. It is iOS-only; on macOS the module is empty so `swift test` still runs there.
+
+A consuming game needs:
+
+1. `GameTimeAdMob` added to the app target.
+2. `GADApplicationIdentifier` in the app's Info.plist. Use `AdMobConfiguration.sampleApplicationID` until the real AdMob app exists.
+3. An `AdMobConfiguration` with a production rewarded unit id per placement. `AdMobConfiguration.testing` uses Google's sample units and must never ship in a release build.
+4. This order at launch: `AdConsent().gatherConsent()`, then `AdMobRewardedProvider.start()` once consent allows ads, then pass the provider to `MonetizationCoordinator` and feed `AdConsent.canRequestAds` into `MonetizationContext.canRequestAds`.
+5. A way to reopen the consent form from settings when `AdConsent.privacyOptionsRequired` is true.
+
+Behaviour that matters for the rules in this document: one ad is preloaded per placement so `isAvailable` is instant and honest; a failed or missing ad reports `unavailable` and never blocks play; closing an ad without earning the reward is `cancelled`, so only an earned reward becomes `completed`.
+
