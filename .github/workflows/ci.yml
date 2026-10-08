@@ -14,3 +14,10 @@ jobs:
         run: swift --version
       - name: Test package
         run: swift test
+      - name: Build AdMob adapter for iOS
+        # `swift test` runs on macOS, where the iOS-only adapter compiles empty, so build it for iOS too.
+        run: |
+          xcodebuild \
+            -scheme GameTimeAdMob \
+            -destination "generic/platform=iOS Simulator" \
+            build
