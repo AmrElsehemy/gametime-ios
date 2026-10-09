@@ -21,3 +21,11 @@ jobs:
             -scheme GameTimeAdMob \
             -destination "generic/platform=iOS Simulator" \
             build
+      - name: Build device feedback for iOS
+        # Core Haptics and AVFoundation controllers are iOS-only, so macOS tests do not compile them.
+        run: |
+          xcodebuild \
+            -scheme GameTimeExperience \
+            -destination "generic/platform=iOS Simulator" \
+            build
+
