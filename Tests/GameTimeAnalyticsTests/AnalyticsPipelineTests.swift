@@ -179,3 +179,10 @@ private final class Harness {
     store.clear()
     #expect(store.all().isEmpty)
 }
+
+@Test func pipelineCanStandInForAnyAnalyticsClient() {
+    let h = Harness()
+    let client: any AnalyticsClient = h.pipeline
+    client.track(menuOpened)
+    #expect(h.events().last?.name == "menu_opened")
+}

@@ -14,8 +14,9 @@ public protocol AnalyticsFlushing: Sendable {
 /// player or any advertising identifier, and it disappears when the app is deleted.
 ///
 /// The pipeline emits `first_open`, `session_start` and `session_end` itself. Games send everything
-/// else through `track(_:)` with their own typed, versioned schema.
-public final class AnalyticsPipeline: @unchecked Sendable {
+/// else through `track(_:)` with their own typed, versioned schema. It is itself an `AnalyticsClient`,
+/// so code written against that protocol can be handed the pipeline directly.
+public final class AnalyticsPipeline: AnalyticsClient, @unchecked Sendable {
     public struct Context: Sendable, Equatable {
         /// The game's slug, such as `top-off`. Every game shares one analytics project, so this is how
         /// dashboards tell them apart.
