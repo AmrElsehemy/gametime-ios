@@ -186,3 +186,14 @@ private final class Harness {
     client.track(menuOpened)
     #expect(h.events().last?.name == "menu_opened")
 }
+
+@Test func anInstallThatPredatesAnalyticsIsNotCountedAsNew() {
+    let suite = "gametime.analytics.tests.\(UUID().uuidString)"
+    defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+    let store = InMemoryEventStore()
+    let pipeline = AnalyticsPipeline(
+        store: store, context: context, keyPrefix: "p", predatesAnalytics: true, suiteName: suite
+    )
+    pipeline.flush()
+    #expect(store.all().map(\.name) == ["session_start"])
+}

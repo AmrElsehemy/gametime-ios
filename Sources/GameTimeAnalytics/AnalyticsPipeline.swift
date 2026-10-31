@@ -90,6 +90,9 @@ public final class AnalyticsPipeline: AnalyticsClient, @unchecked Sendable {
     ///   - keyPrefix: namespaces this game's saved state in `UserDefaults`, such as `topoff.analytics`.
     ///   - sharingByDefault: whether events are forwarded to `clients` before the player has made a
     ///     choice. Once `setSharingEnabled(_:)` is called, the player's choice is kept.
+    ///   - predatesAnalytics: true when this install was already being played before the pipeline was
+    ///     added (a live game gaining analytics in an update). Its first pipeline launch then starts a
+    ///     session but records no `first_open`, so updating players are not counted as new ones.
     ///   - suiteName: picks a defaults suite (tests use their own); nil means the standard defaults.
     public init(
         store: any EventStoring,
@@ -97,6 +100,7 @@ public final class AnalyticsPipeline: AnalyticsClient, @unchecked Sendable {
         context: Context,
         keyPrefix: String,
         sharingByDefault: Bool = false,
+        predatesAnalytics: Bool = false,
         suiteName: String? = nil,
         now: @escaping @Sendable () -> Date = { Date() },
         makeID: @escaping @Sendable () -> String = { UUID().uuidString }
@@ -120,7 +124,7 @@ public final class AnalyticsPipeline: AnalyticsClient, @unchecked Sendable {
             let date = now()
             queue.async { [self] in
                 ensureSession(at: date)
-                emit(name: "first_open", properties: [:], at: date)
+                if !predatesAnalytics { emit(name: "first_open", properties: [:], at: date) }
             }
         }
     }
