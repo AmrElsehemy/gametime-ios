@@ -73,7 +73,8 @@ public final class FileEventStore: EventStoring, @unchecked Sendable {
                 } else {
                     try line.write(to: fileURL, options: .atomic)
                 }
-                count = (count ?? readLines().count - 1) + 1
+                // Count the line just written; a first count reads the file, which already includes it.
+                count = count.map { $0 + 1 } ?? readLines().count
                 if let count, count > maxEvents { trim() }
             } catch {
                 // Never let a full disk or a permissions problem reach the player.
