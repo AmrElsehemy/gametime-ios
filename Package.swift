@@ -45,7 +45,7 @@ let package = Package(
         .target(name: "GameTimeTesting", dependencies: ["GameTimeCore", "GameTimeServices", "GameTimeCommerce"]),
         .testTarget(name: "GameTimeCoreTests", dependencies: ["GameTimeCore", "GameTimeTesting"]),
         .testTarget(name: "GameTimeExperienceTests", dependencies: ["GameTimeExperience"]),
-        .testTarget(name: "GameTimeAnalyticsTests", dependencies: ["GameTimeAnalytics"]),
+        .testTarget(name: "GameTimeAnalyticsTests", dependencies: ["GameTimeAnalytics", "GameTimeCore", "GameTimeServices"]),
         .testTarget(name: "GameTimeCommerceTests", dependencies: ["GameTimeCommerce"]),
         .testTarget(name: "GameTimeAdMobTests", dependencies: ["GameTimeAdMob", "GameTimeCommerce"])
     ]
