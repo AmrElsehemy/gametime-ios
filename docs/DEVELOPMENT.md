@@ -33,7 +33,7 @@ Create a new tag only after tests pass and the package is suitable for at least 
 
 ## Initial module boundaries
 
-- `GameTimeCore`: deterministic/shared primitives, time/RNG contracts, build metadata, future replay contracts.
+- `GameTimeCore`: deterministic/shared primitives, time/RNG contracts, build metadata, future replay contracts, and the daily-puzzle primitives (`DailyCalendar`, `DailyDay`, `DailyStreak`, `StableHash`).
 - `GameTimeExperience`: reusable sensory/interaction contracts and helpers; Apple-specific implementations can be added behind these APIs.
 - `GameTimeServices`: analytics, diagnostics, remote-config and platform-service adapters.
 - `GameTimeAnalytics`: the on-device event pipeline (install id, sessions, local event log, sharing switch) and `PostHogAnalyticsClient`. Foundation only; no analytics SDK.
