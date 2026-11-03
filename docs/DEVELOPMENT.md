@@ -36,6 +36,7 @@ Create a new tag only after tests pass and the package is suitable for at least 
 - `GameTimeCore`: deterministic/shared primitives, time/RNG contracts, build metadata, future replay contracts, and the daily-puzzle primitives (`DailyCalendar`, `DailyDay`, `DailyStreak`, `StableHash`).
 - `GameTimeExperience`: reusable sensory/interaction contracts and helpers; Apple-specific implementations can be added behind these APIs.
 - `GameTimeServices`: analytics, diagnostics, remote-config and platform-service adapters.
+- `GameTimePersistence`: `SaveStore` (load/save one value in `UserDefaults`; an unreadable save is backed up, never deleted; games keep their shipped format through a `SaveCodec`, and new saves can use `SaveCodec.versioned`) and `FeedbackSettingsStore` (sound and haptics switches under the keys a game already uses). Foundation only.
 - `GameTimeAnalytics`: the on-device event pipeline (install id, sessions, local event log, sharing switch) and `PostHogAnalyticsClient`. Foundation only; no analytics SDK.
 - `GameTimeCommerce`: rewarded-value and StoreKit/ad abstractions; no game-specific economy rules.
 - `GameTimeTesting`: deterministic clocks, fakes, recording adapters and fixtures for consuming games.

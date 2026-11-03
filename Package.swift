@@ -12,6 +12,7 @@ let package = Package(
         .library(name: "GameTimeExperience", targets: ["GameTimeExperience"]),
         .library(name: "GameTimeServices", targets: ["GameTimeServices"]),
         .library(name: "GameTimeAnalytics", targets: ["GameTimeAnalytics"]),
+        .library(name: "GameTimePersistence", targets: ["GameTimePersistence"]),
         .library(name: "GameTimeCommerce", targets: ["GameTimeCommerce"]),
         .library(name: "GameTimeAdMob", targets: ["GameTimeAdMob"]),
         .library(name: "GameTimeTesting", targets: ["GameTimeTesting"])
@@ -28,6 +29,8 @@ let package = Package(
         .target(name: "GameTimeServices", dependencies: ["GameTimeCore"]),
         // On-device event pipeline plus a PostHog client. Foundation only: no analytics SDK is linked.
         .target(name: "GameTimeAnalytics", dependencies: ["GameTimeCore", "GameTimeServices"]),
+        // Saves that are never lost to a read failure, plus the shared sound/haptics settings. Foundation only.
+        .target(name: "GameTimePersistence", dependencies: ["GameTimeCore"]),
         .target(name: "GameTimeCommerce", dependencies: ["GameTimeCore", "GameTimeServices"]),
         // Concrete AdMob adapter for the provider-agnostic `AdProviding` boundary. The SDK is
         // iOS-only, so macOS builds (`swift test`) compile an empty module.
@@ -46,6 +49,7 @@ let package = Package(
         .testTarget(name: "GameTimeCoreTests", dependencies: ["GameTimeCore", "GameTimeTesting"]),
         .testTarget(name: "GameTimeExperienceTests", dependencies: ["GameTimeExperience"]),
         .testTarget(name: "GameTimeAnalyticsTests", dependencies: ["GameTimeAnalytics", "GameTimeCore", "GameTimeServices"]),
+        .testTarget(name: "GameTimePersistenceTests", dependencies: ["GameTimePersistence", "GameTimeCore"]),
         .testTarget(name: "GameTimeCommerceTests", dependencies: ["GameTimeCommerce"]),
         .testTarget(name: "GameTimeAdMobTests", dependencies: ["GameTimeAdMob", "GameTimeCommerce"])
     ]
