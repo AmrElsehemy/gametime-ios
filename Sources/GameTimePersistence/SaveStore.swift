@@ -180,17 +180,25 @@ public final class SaveStore<Value>: @unchecked Sendable {
         if let record = try? JSONEncoder().encode(BackupRecord(recovery: recovery, data: data)) {
             defaults.set(record, forKey: backupKey)
         }
-        for stale in backupRecordsLocked().dropFirst(Self.maxBackups) {
+        for stale in backupRecordsLocked(removingUnreadable: true).dropFirst(Self.maxBackups) {
             defaults.removeObject(forKey: stale.recovery.backupKey)
         }
         return recovery
     }
 
-    private func backupRecordsLocked() -> [BackupRecord] {
-        defaults.dictionaryRepresentation().keys
-            .filter { $0.hasPrefix(backupPrefix) }
-            .compactMap { defaults.data(forKey: $0).flatMap { try? JSONDecoder().decode(BackupRecord.self, from: $0) } }
-            .sorted { ($0.recovery.date, $0.recovery.backupKey) > ($1.recovery.date, $1.recovery.backupKey) }
+    /// - Parameter removingUnreadable: also delete entries under the backup prefix that are not a readable
+    ///   backup record, so they cannot pile up outside the `maxBackups` limit. Done when a backup is taken,
+    ///   never by the read-only `backups()`.
+    private func backupRecordsLocked(removingUnreadable: Bool = false) -> [BackupRecord] {
+        var records: [BackupRecord] = []
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(backupPrefix) {
+            if let record = defaults.data(forKey: key).flatMap({ try? JSONDecoder().decode(BackupRecord.self, from: $0) }) {
+                records.append(record)
+            } else if removingUnreadable {
+                defaults.removeObject(forKey: key)
+            }
+        }
+        return records.sorted { ($0.recovery.date, $0.recovery.backupKey) > ($1.recovery.date, $1.recovery.backupKey) }
     }
 }
 

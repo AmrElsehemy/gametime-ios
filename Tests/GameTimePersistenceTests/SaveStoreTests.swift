@@ -94,6 +94,21 @@ private final class Fixture {
     #expect(store.backupData(for: made[0]) == nil)
 }
 
+@Test func unreadableBackupEntriesAreClearedWhenTheNextBackupIsTaken() {
+    let f = Fixture()
+    let store = f.store(.json) { Progress() }
+    f.defaults.set("not a backup record", forKey: "game.progress.v1.unreadable.junk")
+    f.defaults.set(Data("garbage".utf8), forKey: "game.progress.v1.unreadable.garbage")
+    #expect(store.backups().isEmpty, "Unreadable entries are not listed")
+    #expect(f.defaults.object(forKey: "game.progress.v1.unreadable.junk") != nil, "...and listing removes nothing")
+
+    f.defaults.set(Data("broken".utf8), forKey: "game.progress.v1")
+    _ = store.load()
+    #expect(store.backups().count == 1)
+    #expect(f.defaults.object(forKey: "game.progress.v1.unreadable.junk") == nil)
+    #expect(f.defaults.object(forKey: "game.progress.v1.unreadable.garbage") == nil)
+}
+
 @Test func backupsTakenAtTheSameInstantDoNotOverwriteEachOther() {
     let f = Fixture()
     let store = f.store(.json) { Progress() }
